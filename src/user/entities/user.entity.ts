@@ -11,6 +11,7 @@ import {
 
 import * as bcrypt from 'bcrypt';
 import { Record } from 'src/record/record.entity';
+import { Post } from 'src/post/entities/post.entity';
 
 @Entity()
 export class User {
@@ -48,4 +49,7 @@ export class User {
 
   @OneToMany(() => Record, (record) => record.user)
   records: Record[];
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 }

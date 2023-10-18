@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Req,
   UploadedFile,
   UseGuards,
@@ -46,4 +47,8 @@ export class UserController {
   async getUsersProfile(@Req() req: any) {
     return req.user;
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('/')
+  async updateUsersProfile(@Req() req: any) {}
 }

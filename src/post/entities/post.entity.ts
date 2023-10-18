@@ -6,37 +6,28 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   UpdateDateColumn,
+  BeforeInsert,
+  OneToMany,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
 
-export enum Status {
-  COMPLET = 'complet',
-  INCOMPLET = 'incomplet',
-}
-
 @Entity()
-export class Record {
+export class Post {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column('varchar')
-  title: string;
-
-  @Column('int')
-  set: number;
 
   @Column('int')
   userId: number;
 
   @Column('varchar')
-  part: string;
+  title: string;
+
+  @Column('varchar')
+  content: string;
 
   @Column('varchar', { default: null })
-  exercise: string;
-
-  @Column({ type: 'enum', enum: Status })
-  status: string;
+  imgUrl: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -47,7 +38,7 @@ export class Record {
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true })
   deletedAt: Date | null;
 
-  @ManyToOne(() => User, (user) => user.records)
+  @ManyToOne(() => User, (user) => user.posts)
   @JoinColumn({ name: 'userId' })
   user: User;
 }

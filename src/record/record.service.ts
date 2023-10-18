@@ -13,7 +13,7 @@ export class RecordService {
     private readonly recordRepository: Repository<Record>,
   ) {}
 
-  async createRecord(recordDto: RecordDTO.CreateRecord) {
+  async createRecord(recordDto: RecordDTO.CreateRecord, userId) {
     const { title, exercise, set, part } = recordDto;
     let { status } = recordDto;
     if (status !== Status.INCOMPLET) {
@@ -25,12 +25,13 @@ export class RecordService {
       set,
       part,
       status,
+      userId,
     });
     return await this.recordRepository.save(newRecord);
   }
 
   async readRecords(id: number) {
-    return await this.recordRepository.find({ where: { id } });
+    return await this.recordRepository.find({ where: { userId: id } });
   }
 
   async readRecordById(id: number) {

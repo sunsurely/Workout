@@ -21,8 +21,11 @@ export class RecordController {
 
   @Post()
   @UseGuards(AuthGuard('jwt'))
-  async createRecord(@Body() recordDto: RecordDTO.CreateRecord) {
-    return await this.recordService.createRecord(recordDto);
+  async createRecord(
+    @Body() recordDto: RecordDTO.CreateRecord,
+    @Req() req: any,
+  ) {
+    return await this.recordService.createRecord(recordDto, req.user.id);
   }
 
   @Get()

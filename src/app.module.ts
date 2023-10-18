@@ -10,6 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { AwsService } from './aws.service';
 import { RecordModule } from './record/record.module';
+import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RecordModule } from './record/record.module';
     AuthModule,
     UserModule,
     RecordModule,
+    PostModule,
   ],
   controllers: [AppController],
   providers: [AppService, AwsService],
