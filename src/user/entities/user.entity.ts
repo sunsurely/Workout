@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 import * as bcrypt from 'bcrypt';
-import { Record } from 'src/record/record.entity';
+import { Record } from 'src/record/entity/record.entity';
 import { Post } from 'src/post/entities/post.entity';
 
 @Entity()

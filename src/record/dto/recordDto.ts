@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export namespace RecordDTO {
   export class CreateRecord {
@@ -11,12 +11,8 @@ export namespace RecordDTO {
     readonly part: string;
 
     @IsNotEmpty()
-    @IsString()
-    readonly exercise: string;
-
-    @IsNotEmpty()
-    @IsNumber()
-    readonly set: number;
+    @IsArray()
+    readonly excercise: Array<{ exercise: string; set: number }>;
 
     @IsString()
     readonly status: string;

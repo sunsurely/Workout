@@ -1,4 +1,5 @@
 import { User } from 'src/user/entities/user.entity';
+import { Excercise } from './excercise.entity';
 import {
   Column,
   Entity,
@@ -8,6 +9,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 
 export enum Status {
@@ -32,9 +34,6 @@ export class Record {
   @Column('varchar')
   part: string;
 
-  @Column('varchar', { default: null })
-  exercise: string;
-
   @Column({ type: 'enum', enum: Status })
   status: string;
 
@@ -50,4 +49,7 @@ export class Record {
   @ManyToOne(() => User, (user) => user.records)
   @JoinColumn({ name: 'userId' })
   user: User;
+
+  @OneToMany(() => Excercise, (excercise) => excercise.record)
+  excercisises: Excercise[];
 }
