@@ -12,7 +12,7 @@ export namespace RecordDTO {
 
     @IsNotEmpty()
     @IsArray()
-    readonly excercise: Array<{ exercise: string; set: number }>;
+    readonly exercise: Array<{ exercise: string; set: number }>;
 
     @IsString()
     readonly status: string;
@@ -25,11 +25,8 @@ export namespace RecordDTO {
     @IsString()
     readonly part?: string;
 
-    @IsString()
-    readonly exercise?: string;
-
-    @IsNumber()
-    readonly set?: number;
+    @IsArray()
+    readonly exercise: Array<{ id: number; exercise: string; set: number }>;
 
     @IsString()
     readonly status?: string;

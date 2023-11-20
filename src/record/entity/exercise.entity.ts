@@ -1,5 +1,4 @@
-import { User } from 'src/user/entities/user.entity';
-import { Exercise } from './exercise.entity';
+import { Record } from './record.entity';
 import {
   Column,
   Entity,
@@ -9,7 +8,6 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-  OneToMany,
 } from 'typeorm';
 
 export enum Status {
@@ -18,21 +16,18 @@ export enum Status {
 }
 
 @Entity()
-export class Record {
+export class Exercise {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column('int')
+  recordId: number;
+
   @Column('varchar')
-  title: string;
+  exercise: string;
 
   @Column('int')
-  userId: number;
-
-  @Column('varchar')
-  part: string;
-
-  @Column({ type: 'enum', enum: Status })
-  status: string;
+  set: number;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -43,10 +38,9 @@ export class Record {
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true })
   deletedAt: Date | null;
 
-  @ManyToOne(() => User, (user) => user.records)
-  @JoinColumn({ name: 'userId' })
-  user: User;
-
-  @OneToMany(() => Exercise, (exercise) => exercise.record, { cascade: true })
-  exercises: Exercise[];
+  @ManyToOne(() => Record, (record) => record.exercises, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'recordId' })
+  record: Record;
 }

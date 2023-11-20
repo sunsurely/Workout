@@ -1,4 +1,5 @@
-import { Record } from './record.entity';
+import { User } from 'src/user/entities/user.entity';
+import { Post } from './post.entity';
 import {
   Column,
   Entity,
@@ -8,27 +9,21 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-  OneToMany,
 } from 'typeorm';
 
-export enum Status {
-  COMPLET = 'complet',
-  INCOMPLET = 'incomplet',
-}
-
 @Entity()
-export class Excercise {
+export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column('int')
-  recordId: number;
-
-  @Column('varchar')
-  excercise: string;
+  userId: number;
 
   @Column('int')
-  set: number;
+  postId: number;
+
+  @Column('varchar')
+  comment: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -39,7 +34,11 @@ export class Excercise {
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true })
   deletedAt: Date | null;
 
-  @ManyToOne(() => Record, (record) => record.excercisises)
-  @JoinColumn({ name: 'recordId' })
-  record: Record;
+  @ManyToOne(() => User, (user) => user.comments)
+  @JoinColumn({ name: 'userId' })
+  user: User;
+
+  @ManyToOne(() => Post, (post) => post.comments)
+  @JoinColumn({ name: 'postId' })
+  post: Post;
 }

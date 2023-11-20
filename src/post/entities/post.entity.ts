@@ -6,11 +6,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   UpdateDateColumn,
-  BeforeInsert,
-  OneToMany,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
+import { Comment } from './comment.entity';
 
 @Entity()
 export class Post {
@@ -41,4 +41,7 @@ export class Post {
   @ManyToOne(() => User, (user) => user.posts)
   @JoinColumn({ name: 'userId' })
   user: User;
+
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[];
 }

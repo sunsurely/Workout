@@ -28,7 +28,7 @@ export class RecordController {
     return await this.recordService.createRecord(recordDto, req.user.id);
   }
 
-  @Get()
+  @Get('/')
   @UseGuards(AuthGuard('jwt'))
   async readRecords(@Req() req: any) {
     const { id } = req.user.id;

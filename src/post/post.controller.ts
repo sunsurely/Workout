@@ -17,6 +17,7 @@ import { PostService } from './post.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { PostDTO } from './dto/postDto';
+import { CommentDTO } from './dto/commentDto';
 
 @Controller('post')
 export class PostController {
@@ -95,6 +96,42 @@ export class PostController {
       req.user,
       postId,
       postDto.password,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/:postId/comment')
+  async createComment(
+    @Param(
+      'postId',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    postId,
+    @Req() req: any,
+    @Body() commentDto: CommentDTO.CreatePost,
+  ) {
+    return await this.postService.createComment(
+      req.user.id,
+      postId,
+      commentDto.comment,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/:commentId/comment')
+  async deleteComment(
+    @Param(
+      'commentId',
+      new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    commentId,
+    @Req() req: any,
+    @Body() commentDto: CommentDTO.DeleteComment,
+  ) {
+    return await this.postService.deleteComment(
+      req.user,
+      commentId,
+      commentDto.password,
     );
   }
 }
