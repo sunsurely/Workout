@@ -1,65 +1,81 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { UsersRepository } from './user.repository';
+import { AuthDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/entities/user.entity';
-import { UserService } from 'src/user/user.service';
-import { Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
+import { User } from './user.entity';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly configService: ConfigService,
-    private readonly jwtService: JwtService,
-    private readonly userService: UserService,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private userRepository: UsersRepository,
+    private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.userService.findByEmail(email);
-    if (!user) {
-      throw new UnauthorizedException('존재하지 않는 회원입니다');
-    }
+  async signup({
+    email,
+    nickname,
+    password,
+  }: AuthDto.CreateUser): Promise<void> {
+    const existUser = await this.userRepository.getUserByEmail(email);
+    if (existUser) throw new ConflictException('Existing email');
 
-    const comparedPassword = await bcrypt.compareSync(password, user.password);
-    if (!comparedPassword) {
-      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
-    }
+    const existNickname = await this.userRepository.getUserNickname(nickname);
+    if (existNickname) throw new ConflictException('Existing nickname');
 
-    if (user && comparedPassword) {
-      return user;
-    }
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    await this.userRepository.createUser(email, nickname, hashedPassword);
   }
 
-  async signin(id: number) {
-    const payload = { id };
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
-      expiresIn: this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
-    });
-
-    const currentRefreshToken = await bcrypt.hash(refreshToken, 10);
-
+  async signin(
+    user: User,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const accessToken = this.getToken(user.nickname);
+    const refreshToken = this.getToken(user.nickname);
     await this.userRepository.update(
-      { id },
-      { refreshToken: currentRefreshToken },
+      { nickname: user.nickname },
+      { refreshToken },
     );
 
     return { accessToken, refreshToken };
   }
 
-  async removeRefreshToken(id: number) {
-    await this.userRepository.update({ id }, { refreshToken: null });
-    return;
+  async logout(nickname: string): Promise<void> {
+    await this.userRepository.removeRefreshToken(nickname);
   }
 
-  async refreshAccessToken(id) {
-    const payload = { id };
-    const newAccessToken = this.jwtService.sign({ payload });
+  getToken(nickname: string) {
+    const payload = { nickname };
+    return this.jwtService.sign(payload);
+  }
 
-    return newAccessToken;
+  async validateUser(email: string, password: string): Promise<User | null> {
+    const user = await this.userRepository.getUserByEmail(email);
+    if (!user) throw new UnauthorizedException('Not found user');
+
+    const comparedPassword = await bcrypt.compare(password, user.password);
+    if (!comparedPassword)
+      throw new UnauthorizedException('Password does not match');
+    return user;
+  }
+
+  async validateRefreshToken(
+    user: User,
+    bearerToken: string,
+  ): Promise<{ accessToken: string }> {
+    const refreshToken = bearerToken.replace('Bearer', '').trim();
+
+    if (user.refreshToken !== refreshToken) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const accessToken = await this.getToken(user.nickname);
+    return { accessToken };
   }
 }

@@ -1,36 +1,28 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { TypeOrmConfigService } from './config/typeorm.config.service';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { JwtModule } from '@nestjs/jwt';
-import { JwtConfigService } from './config/jwt.config.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UserModule } from './user/user.module';
-import { AwsService } from './aws.service';
-import { RecordModule } from './record/record.module';
-import { PostModule } from './post/post.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeORmConfigService } from './config/typeorm.config.service';
+import { LocalStrategy } from './auth/strategy/local.strategy';
+import { JwtStrategy } from './auth/strategy/jwt.strategy';
+import { StaffModule } from './staff/staff.module';
+import { MemberModule } from './member/member.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useClass: TypeOrmConfigService,
-      inject: [ConfigService],
-    }),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useClass: JwtConfigService,
+      useClass: TypeORmConfigService,
       inject: [ConfigService],
     }),
     AuthModule,
-    UserModule,
-    RecordModule,
-    PostModule,
+    StaffModule,
+    MemberModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AwsService],
+  providers: [AppService, LocalStrategy, JwtStrategy],
 })
 export class AppModule {}

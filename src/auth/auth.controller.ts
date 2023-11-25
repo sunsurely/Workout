@@ -1,40 +1,46 @@
-import { Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  ValidationPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
+import { AuthDto } from './dto/auth.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('/signup')
+  async signup(
+    @Body(ValidationPipe) authDto: AuthDto.CreateUser,
+  ): Promise<void> {
+    await this.authService.signup(authDto);
+  }
+
   @UseGuards(AuthGuard('local'))
   @Post('/signin')
-  async signin(@Res() res: Response, @Req() req: any) {
-    const tokenResult = await this.authService.signin(req.user.id);
-    res.cookie('access_token', tokenResult.accessToken);
-    res.cookie('refresh_token', tokenResult.refreshToken);
-
-    return res.json({ message: '로그인 성공' });
+  async signin(
+    @Req() req: any,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    return this.authService.signin(req.user);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/logout')
-  async logout(@Req() req: any, @Res({ passthrough: true }) res: Response) {
-    await this.authService.removeRefreshToken(req.user.id);
-
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
-    return '로그아웃 성공';
+  async logout(@Req() req: any): Promise<void> {
+    await this.authService.logout(req.username);
   }
 
-  @UseGuards(AuthGuard('jwt-refresh-token'))
+  @UseGuards(AuthGuard('jwt'))
   @Post('/refresh')
-  async refreshAccessToken(@Req() req: any, @Res() res: Response) {
-    const newAccessToken = await this.authService.refreshAccessToken(
-      req.user.id,
+  async refresh(@Req() req: any): Promise<{ accessToken: string }> {
+    return this.authService.validateRefreshToken(
+      req.user,
+      req.headers.authorization,
     );
-
-    res.cookie('access_token', newAccessToken);
-    return res.json({ message: '엑세스토큰 갱신' });
   }
 }

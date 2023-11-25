@@ -1,17 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/user/entities/user.entity';
-import { Record } from 'src/record/entity/record.entity';
-import { Post } from 'src/post/entities/post.entity';
-import { Exercise } from 'src/record/entity/exercise.entity';
-import { Comment } from 'src/post/entities/comment.entity';
+import { TypeOrmOptionsFactory } from '@nestjs/typeorm';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm/dist';
 
 @Injectable()
-export class TypeOrmConfigService implements TypeOrmOptionsFactory {
+export class TypeORmConfigService implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService) {}
 
-  createTypeOrmOptions(): TypeOrmModuleOptions {
+  createTypeOrmOptions(connectionName?: string): TypeOrmModuleOptions {
     return {
       type: 'mysql',
       host: this.configService.get<string>('DATABASE_HOST'),
@@ -19,7 +15,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       username: this.configService.get<string>('DATABASE_USERNAME'),
       password: this.configService.get<string>('DATABASE_PASSWORD'),
       database: this.configService.get<string>('DATABASE_NAME'),
-      entities: [User, Record, Post, Exercise, Comment],
+      entities: [__dirname + '/../**/*.entity.{js,ts}'],
       synchronize: true,
     };
   }
