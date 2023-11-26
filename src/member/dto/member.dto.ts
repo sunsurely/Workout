@@ -66,4 +66,13 @@ export namespace MemberDTO {
     @IsArray()
     readonly exerciseArr: Excercise[];
   }
+
+  export class UpdateState {
+    @IsString()
+    @Matches(/^\d{4}-\d{2}-\d{2}$/)
+    readonly registDate: string;
+
+    @IsNumber()
+    readonly period: number;
+  }
 }

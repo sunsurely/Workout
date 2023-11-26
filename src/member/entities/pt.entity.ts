@@ -54,6 +54,6 @@ export class PT extends BaseEntity {
   member: Member;
 
   @ManyToOne(() => Staff, (staff) => staff.pts)
-  @JoinColumn({ name: 'staffId' })
+  @JoinColumn({ name: 'trainerId' })
   staff: Staff;
 }

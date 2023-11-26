@@ -29,7 +29,7 @@ export class Excercise extends BaseEntity {
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true })
   deletedAt: Date | null;
 
-  @ManyToOne(() => Record, (record) => record.excerisies)
+  @ManyToOne(() => Record, (record) => record.excercisies)
   @JoinColumn({ name: 'recordId' })
   record: Record;
 }

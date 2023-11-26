@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { MemberReppository } from './member.repository';
 import { MemberDTO } from './dto/member.dto';
 import { DataSource } from 'typeorm';
@@ -7,6 +11,7 @@ import { PT } from './entities/pt.entity';
 import { Record } from './entities/record.entity';
 import { Excercise as recordExercise } from './dto/member.dto';
 import { Excercise } from './entities/excercise.entity';
+import { AllMember } from './types/member.types';
 
 @Injectable()
 export class MemberService {
@@ -28,6 +33,45 @@ export class MemberService {
     }
 
     await this.memberRepository.createMember(userId, memberDto);
+  }
+
+  async getAllMembersById(userId: number): Promise<AllMember[]> {
+    const members = await this.memberRepository.getAllMembers(userId);
+    const memberResult = members.map((member) => {
+      const { pts, ...rest } = member;
+      return {
+        ...rest,
+        amounts: member.pts[0].amounts,
+        trainerName: member.pts[0].staff.name,
+      };
+    });
+
+    return memberResult;
+  }
+
+  async getMemberById(memberId: number): Promise<Member> {
+    const member = await this.memberRepository.getMemberById(memberId);
+
+    if (!member) {
+      throw new NotFoundException('Not found member.');
+    }
+
+    return member;
+  }
+
+  async getAllRecordsByMemberId(memberId: number): Promise<Member> {
+    return await this.memberRepository.getAllRecordsByMemberId(memberId);
+  }
+
+  async getAllRecordsByTrainerId(
+    memberId: number,
+    trainerId: number,
+  ): Promise<Member> {
+    return this.memberRepository.getAllRecordsByTrainerId(memberId, trainerId);
+  }
+
+  async getARecordById(memberId: number, recordId): Promise<Member> {
+    return this.memberRepository.getRecordById(memberId, recordId);
   }
 
   async registPT(staffId, memberId, memberDTO: MemberDTO.CreatePT) {
@@ -101,5 +145,17 @@ export class MemberService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async updateMembersState(
+    memberId: number,
+    registDate: string,
+    period: number,
+  ): Promise<void> {
+    await this.memberRepository.updateMembersState(
+      memberId,
+      registDate,
+      period,
+    );
   }
 }

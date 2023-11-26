@@ -42,7 +42,7 @@ export class Record extends BaseEntity {
   deletedAt: Date | null;
 
   @OneToMany(() => Excercise, (excercise) => excercise.record)
-  excerisies: Excercise[];
+  excercisies: Excercise[];
 
   @ManyToOne(() => PT, (pt) => pt.records)
   @JoinColumn({ name: 'ptId' })
