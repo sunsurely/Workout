@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Member, MemberState } from './entities/member.entity';
 import { MemberDTO } from './dto/member.dto';
+
 @Injectable()
 export class MemberReppository extends Repository<Member> {
   constructor(private readonly dataSource: DataSource) {
@@ -165,6 +166,15 @@ export class MemberReppository extends Repository<Member> {
 
   async getMemberByPhoneNumber(phoneNumber: string): Promise<Member> {
     return await this.findOne({ where: { phoneNumber } });
+  }
+
+  async getPTCountingByTrainerId(trainerId: number): Promise<number> {
+    const membersCount = await this.createQueryBuilder('member')
+      .innerJoin('member.pts', 'pt')
+      .where('pt.trainerId=:trainerId', { trainerId })
+      .andWhere('pt.expired=:expired', { expired: false })
+      .getCount();
+    return membersCount;
   }
 
   async updateMembersState(

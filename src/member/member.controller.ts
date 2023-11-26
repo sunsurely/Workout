@@ -29,6 +29,27 @@ export class MemberController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Post('/pt/:staffId/:memberId')
+  async registPT(
+    @Body() ptDTO: MemberDTO.CreatePT,
+    @Param('staffId', new ParseIntPipe()) staffId: number,
+    @Param('memberId', new ParseIntPipe()) memberId: number,
+  ): Promise<void> {
+    return this.memberService.registPT(staffId, memberId, ptDTO);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/pt/record/:memberId/:trainerId/:ptId')
+  async createRecord(
+    @Param('memberId', new ParseIntPipe()) memberId: number,
+    @Param('trainerId', new ParseIntPipe()) trainerId: number,
+    @Param('ptId', new ParseIntPipe()) ptId: number,
+    @Body() memberDTO: MemberDTO.CreateRecord,
+  ): Promise<void> {
+    await this.memberService.createRecord(memberId, trainerId, ptId, memberDTO);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   async getAllMembersById(@Req() req: any) {
     return this.memberService.getAllMembersById(req.user.id);
@@ -72,24 +93,11 @@ export class MemberController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('/pt/:staffId/:memberId')
-  async registPT(
-    @Body() ptDTO: MemberDTO.CreatePT,
-    @Param('staffId', new ParseIntPipe()) staffId: number,
-    @Param('memberId', new ParseIntPipe()) memberId: number,
-  ): Promise<void> {
-    return this.memberService.registPT(staffId, memberId, ptDTO);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('/pt/record/:memberId/:trainerId/:ptId')
-  async createRecord(
-    @Param('memberId', new ParseIntPipe()) memberId: number,
+  @Get('/trainer/:trainerId/pt')
+  async getPTCountingByTrainerId(
     @Param('trainerId', new ParseIntPipe()) trainerId: number,
-    @Param('ptId', new ParseIntPipe()) ptId: number,
-    @Body() memberDTO: MemberDTO.CreateRecord,
-  ): Promise<void> {
-    await this.memberService.createRecord(memberId, trainerId, ptId, memberDTO);
+  ): Promise<number> {
+    return this.memberService.getPTCountingByTrainerId(trainerId);
   }
 
   @UseGuards(AuthGuard('jwt'))

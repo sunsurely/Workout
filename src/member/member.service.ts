@@ -74,6 +74,10 @@ export class MemberService {
     return this.memberRepository.getRecordById(memberId, recordId);
   }
 
+  async getPTCountingByTrainerId(trainerId: number): Promise<number> {
+    return await this.memberRepository.getPTCountingByTrainerId(trainerId);
+  }
+
   async registPT(staffId, memberId, memberDTO: MemberDTO.CreatePT) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
