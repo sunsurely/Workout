@@ -35,9 +35,32 @@ export class MemberService {
     await this.memberRepository.createMember(userId, memberDto);
   }
 
-  async getAllMembersById(userId: number): Promise<AllMember[]> {
-    const members = await this.memberRepository.getAllMembers(userId);
+  async getAllMembersById(
+    userId: number,
+    option: MemberDTO.Option,
+  ): Promise<AllMember[]> {
+    const { stateOpt, genderOpt } = option;
+
+    const members = await this.memberRepository.getAllMembers(
+      userId,
+      stateOpt,
+      genderOpt,
+    );
     const memberResult = members.map((member) => {
+      const { pts, ...rest } = member;
+      return {
+        ...rest,
+        amounts: pts[0].amounts,
+        trainerName: pts[0].staff.name,
+      };
+    });
+
+    return memberResult;
+  }
+
+  async getMembersByName(userId: number, name: string) {
+    const members = await this.memberRepository.getMembersByName(userId, name);
+    const membersResult = members.map((member) => {
       const { pts, ...rest } = member;
       return {
         ...rest,
@@ -46,7 +69,22 @@ export class MemberService {
       };
     });
 
-    return memberResult;
+    return membersResult;
+  }
+
+  async getMemberByPhoneNumber(phoneNumber: string) {
+    const member = await this.memberRepository.getMemberByPhoneNumber(
+      phoneNumber,
+    );
+
+    const { pts, ...rest } = member;
+    const result = {
+      ...rest,
+      amounts: pts[0].amounts,
+      trainerName: pts[0].staff.name,
+    };
+
+    return result;
   }
 
   async getMemberById(memberId: number): Promise<Member> {

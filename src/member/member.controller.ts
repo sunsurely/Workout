@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -50,9 +49,26 @@ export class MemberController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('/name')
+  async getMembersByName(
+    @Req() req: any,
+    @Body() memberDTO: MemberDTO.NameForSearching,
+  ) {
+    return this.memberService.getMembersByName(req.user.id, memberDTO.name);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('/phone')
+  async getMemberByPhoneNumber(
+    @Body() memberDTO: MemberDTO.PhoneNumberForSearching,
+  ) {
+    return this.memberService.getMemberByPhoneNumber(memberDTO.phoneNumber);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get()
-  async getAllMembersById(@Req() req: any) {
-    return this.memberService.getAllMembersById(req.user.id);
+  async getAllMembersById(@Req() req: any, @Body() options: MemberDTO.Option) {
+    return this.memberService.getAllMembersById(req.user.id, options);
   }
 
   @UseGuards(AuthGuard('jwt'))

@@ -1,7 +1,6 @@
 import { Transform } from 'class-transformer';
 import {
   IsArray,
-  IsDate,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -74,5 +73,28 @@ export namespace MemberDTO {
 
     @IsNumber()
     readonly period: number;
+  }
+
+  export class Option {
+    @IsString()
+    @IsEnum(['pt', 'expired', 'normal', 'total'])
+    readonly stateOpt;
+
+    @IsString()
+    @IsEnum(['male', 'female', 'total'])
+    readonly genderOpt;
+  }
+
+  export class NameForSearching {
+    @IsNotEmpty()
+    @IsString()
+    @MinLength(2)
+    @MaxLength(20)
+    readonly name: string;
+  }
+
+  export class PhoneNumberForSearching {
+    @Matches(/^\d{3}-\d{4}-\d{4}$/)
+    readonly phoneNumber: string;
   }
 }

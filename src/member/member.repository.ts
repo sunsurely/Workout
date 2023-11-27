@@ -33,9 +33,28 @@ export class MemberReppository extends Repository<Member> {
     await this.save(newMember);
   }
 
-  async getAllMembers(userId: number): Promise<Member[]> {
-    const members = await this.createQueryBuilder('member')
-      .where('member.userId = :userId', { userId })
+  async getAllMembers(
+    userId: number,
+    stateOpt: string,
+    genderOpt: string,
+  ): Promise<Member[]> {
+    const query = this.createQueryBuilder('member').where(
+      'member.userId=:userId',
+      { userId },
+    );
+
+    if (stateOpt !== 'total') {
+      if (genderOpt !== 'total') {
+        await query
+          .andWhere('member.state=:state', { state: stateOpt })
+          .andWhere('member.gender=:gender', {
+            gender: genderOpt,
+          });
+      }
+      await query.andWhere('member.state=:state', { state: stateOpt });
+    }
+
+    const members = await query
       .leftJoinAndSelect('member.pts', 'pt', 'pt.expired=:expired', {
         expired: false,
       })
@@ -55,6 +74,55 @@ export class MemberReppository extends Repository<Member> {
       .getMany();
 
     return members;
+  }
+
+  async getMembersByName(userId: number, name: string): Promise<Member[]> {
+    const members = await this.createQueryBuilder('member')
+      .where('member.userId=:userId', { userId })
+      .andWhere('member.name=:name', { name })
+      .leftJoinAndSelect('member.pts', 'pt', 'pt.expired=:expired', {
+        expired: false,
+      })
+      .leftJoinAndSelect('pt.staff', 'staff')
+      .select([
+        'member.userId',
+        'member.name',
+        'member.gender',
+        'member.birth',
+        'member.registDate',
+        'member.state',
+        'member.period',
+        'member.createdAt',
+        'pt.amounts',
+        'staff.name',
+      ])
+      .getMany();
+
+    return members;
+  }
+
+  async getMemberByPhoneNumber(phoneNumber: string): Promise<Member> {
+    const member = await this.createQueryBuilder('member')
+      .where('member.phoneNumber=:phoneNumber', { phoneNumber })
+      .leftJoinAndSelect('member.pts', 'pt')
+      .where('pt.expired=:expired', { expired: false })
+      .leftJoinAndSelect('pt.staff', 'staff')
+      .select([
+        'member.userId',
+        'member.name',
+        'member.gender',
+        'member.birth',
+        'member.registDate',
+        'member.state',
+        'member.period',
+        'member.createdAt',
+        'member.phoneNumber',
+        'pt.amounts',
+        'staff.name',
+      ])
+      .getOne();
+
+    return member;
   }
 
   async getMemberById(id: number): Promise<Member> {
@@ -162,10 +230,6 @@ export class MemberReppository extends Repository<Member> {
       .getOne();
 
     return record;
-  }
-
-  async getMemberByPhoneNumber(phoneNumber: string): Promise<Member> {
-    return await this.findOne({ where: { phoneNumber } });
   }
 
   async getPTCountingByTrainerId(trainerId: number): Promise<number> {
