@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -67,8 +68,12 @@ export class MemberController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get()
-  async getAllMembersById(@Req() req: any, @Body() options: MemberDTO.Option) {
-    return this.memberService.getAllMembersById(req.user.id, options);
+  async getAllMembersById(
+    @Req() req: any,
+    @Query('gender') gender: string,
+    @Query('state') state: string,
+  ) {
+    return this.memberService.getAllMembersById(req.user.id, gender, state);
   }
 
   @UseGuards(AuthGuard('jwt'))

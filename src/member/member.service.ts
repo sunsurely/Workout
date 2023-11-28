@@ -37,14 +37,13 @@ export class MemberService {
 
   async getAllMembersById(
     userId: number,
-    option: MemberDTO.Option,
+    gender: string,
+    state: string,
   ): Promise<AllMember[]> {
-    const { stateOpt, genderOpt } = option;
-
     const members = await this.memberRepository.getAllMembers(
       userId,
-      stateOpt,
-      genderOpt,
+      state,
+      gender,
     );
     const memberResult = members.map((member) => {
       const { pts, ...rest } = member;

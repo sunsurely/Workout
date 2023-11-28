@@ -43,15 +43,17 @@ export class MemberReppository extends Repository<Member> {
       { userId },
     );
 
-    if (stateOpt !== 'total') {
-      if (genderOpt !== 'total') {
-        await query
-          .andWhere('member.state=:state', { state: stateOpt })
-          .andWhere('member.gender=:gender', {
-            gender: genderOpt,
-          });
+    if (stateOpt !== 'total' && genderOpt !== 'total') {
+      await query
+        .andWhere('member.gender=:gender', { gender: genderOpt })
+        .andWhere('member.state=:state', { state: stateOpt });
+    } else {
+      if (stateOpt !== 'total') {
+        await query.andWhere('member.state=:state', { state: stateOpt });
       }
-      await query.andWhere('member.state=:state', { state: stateOpt });
+      if (genderOpt !== 'total') {
+        await query.andWhere('member.gender=:gender', { gender: genderOpt });
+      }
     }
 
     const members = await query
