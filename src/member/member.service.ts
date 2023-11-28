@@ -49,8 +49,8 @@ export class MemberService {
       const { pts, ...rest } = member;
       return {
         ...rest,
-        amounts: pts[0].amounts,
-        trainerName: pts[0].staff.name,
+        amounts: pts.length >= 1 ? pts[0].amounts : 0,
+        trainerName: pts.length >= 1 ? pts[0].staff.name : '-',
       };
     });
 
