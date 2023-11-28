@@ -51,19 +51,15 @@ export class MemberController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/name')
-  async getMembersByName(
-    @Req() req: any,
-    @Body() memberDTO: MemberDTO.NameForSearching,
-  ) {
-    return this.memberService.getMembersByName(req.user.id, memberDTO.name);
+  async getMembersByName(@Req() req: any, @Query('name') name: string) {
+    return this.memberService.getMembersByName(req.user.id, name);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/phone')
-  async getMemberByPhoneNumber(
-    @Body() memberDTO: MemberDTO.PhoneNumberForSearching,
-  ) {
-    return this.memberService.getMemberByPhoneNumber(memberDTO.phoneNumber);
+  async getMemberByPhoneNumber(@Query('phoneNumber') phoneNumber: string) {
+    console.log(phoneNumber);
+    return this.memberService.getMemberByPhoneNumber(phoneNumber);
   }
 
   @UseGuards(AuthGuard('jwt'))

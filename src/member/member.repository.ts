@@ -88,6 +88,7 @@ export class MemberReppository extends Repository<Member> {
       })
       .leftJoinAndSelect('pt.staff', 'staff')
       .select([
+        'member.id',
         'member.userId',
         'member.name',
         'member.gender',
@@ -110,6 +111,7 @@ export class MemberReppository extends Repository<Member> {
       .leftJoin('member.pts', 'pt')
       .leftJoinAndSelect('pt.staff', 'staff')
       .select([
+        'member.id',
         'member.userId',
         'member.name',
         'member.gender',
