@@ -115,11 +115,20 @@ export class MemberService {
         ...rest,
         amounts: pts[0].amounts,
         trainerName: pts[0].staff.name,
+        counting: pts[0].counting,
+        ptExpired: pts[0].expired,
+        ptRegistDate: pts[0].registDate,
       };
       return result;
     }
 
-    return { ...member, amounts: 0, trainerName: '-' };
+    return {
+      ...member,
+      amounts: 0,
+      trainerName: '-',
+      counting: '-',
+      ptExpired: '-',
+    };
   }
 
   async getAllRecordsByMemberId(memberId: number): Promise<Member> {
