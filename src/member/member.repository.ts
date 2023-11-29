@@ -107,9 +107,10 @@ export class MemberReppository extends Repository<Member> {
     return members;
   }
 
-  async getMemberByPhoneNumber(phoneNumber: string) {
+  async getMemberByPhoneNumber(phoneNumber: string, userId: number) {
     const member = await this.createQueryBuilder('member')
       .where('member.phoneNumber=:phoneNumber', { phoneNumber })
+      .andWhere('member.userId=:userId', { userId })
       .leftJoin('member.pts', 'pt')
       .leftJoinAndSelect('pt.staff', 'staff')
       .select([
@@ -131,9 +132,10 @@ export class MemberReppository extends Repository<Member> {
     return member;
   }
 
-  async getMemberById(id: number): Promise<Member> {
+  async getMemberById(id: number, userId: number): Promise<Member> {
     const member = await this.createQueryBuilder('member')
       .where('member.id=:id', { id })
+      .andWhere('member.userId=:userId', { userId })
       .leftJoinAndSelect('member.pts', 'pt')
       .leftJoinAndSelect('pt.staff', 'staff')
       .select([
@@ -146,6 +148,7 @@ export class MemberReppository extends Repository<Member> {
         'member.state',
         'member.period',
         'member.createdAt',
+        'member.userId',
         'pt.id',
         'pt.registDate',
         'pt.counting',
@@ -161,8 +164,12 @@ export class MemberReppository extends Repository<Member> {
     return member;
   }
 
-  async getAllRecordsByMemberId(memberId: number): Promise<Member> {
+  async getAllRecordsByMemberId(
+    memberId: number,
+    userId: number,
+  ): Promise<Member> {
     const result = await this.createQueryBuilder('member')
+      .andWhere('member.userId=:userId', { userId })
       .where('member.id=:memberId', { memberId })
       .leftJoinAndSelect('member.records', 'record')
       .leftJoinAndSelect('record.staff', 'staff')
@@ -188,9 +195,11 @@ export class MemberReppository extends Repository<Member> {
   async getAllRecordsByTrainerId(
     memberId: number,
     trainerId: number,
+    userId: number,
   ): Promise<Member> {
     const result = await this.createQueryBuilder('member')
       .where('member.id="memberId', { memberId })
+      .andWhere('member.userId=:userId', { userId })
       .leftJoinAndSelect('member.records', 'record')
       .where('record.trainerId=:trainerId', { trainerId })
       .leftJoinAndSelect('record.excercisies', 'excercise')
@@ -214,9 +223,14 @@ export class MemberReppository extends Repository<Member> {
     return result;
   }
 
-  async getRecordById(memberId: number, recordId: number): Promise<Member> {
+  async getRecordById(
+    memberId: number,
+    recordId: number,
+    userId: number,
+  ): Promise<Member> {
     const record = await this.createQueryBuilder('member')
       .where('member.id=:memberId', { memberId })
+      .andWhere('member.userId=:userId', { userId })
       .leftJoinAndSelect('member.records', 'record')
       .where('record.id=:recordId', { recordId })
       .leftJoinAndSelect('record.excercisies', 'excercise')
@@ -238,10 +252,14 @@ export class MemberReppository extends Repository<Member> {
     return record;
   }
 
-  async getPTCountingByTrainerId(trainerId: number): Promise<number> {
+  async getPTCountingByTrainerId(
+    trainerId: number,
+    userId: number,
+  ): Promise<number> {
     const membersCount = await this.createQueryBuilder('member')
       .innerJoin('member.pts', 'pt')
-      .where('pt.trainerId=:trainerId', { trainerId })
+      .where('member.userId=:userId', { userId })
+      .andWhere('pt.trainerId=:trainerId', { trainerId })
       .andWhere('pt.expired=:expired', { expired: false })
       .getCount();
     return membersCount;
@@ -251,8 +269,9 @@ export class MemberReppository extends Repository<Member> {
     memberId: number,
     registDate: string,
     period: number,
+    userId: number,
   ): Promise<void> {
-    const member = await this.getMemberById(memberId);
+    const member = await this.getMemberById(memberId, userId);
 
     if (member.state === MemberState.NORMAL) {
       throw new BadRequestException(
@@ -261,12 +280,16 @@ export class MemberReppository extends Repository<Member> {
     }
 
     if (member.state === MemberState.PT) {
-      await this.update({ id: memberId }, { registDate, period });
+      await this.update({ id: memberId, userId }, { registDate, period });
       return;
     }
     await this.update(
       { id: memberId },
       { registDate, state: MemberState.NORMAL, period },
     );
+  }
+
+  async deleteMember(id: number) {
+    await this.softDelete({ id });
   }
 }

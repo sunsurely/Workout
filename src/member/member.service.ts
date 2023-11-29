@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { MemberReppository } from './member.repository';
 import { MemberDTO } from './dto/member.dto';
@@ -12,6 +13,8 @@ import { Record } from './entities/record.entity';
 import { Excercise as recordExercise } from './dto/member.dto';
 import { Excercise } from './entities/excercise.entity';
 import { AllMember } from './types/member.types';
+import { User } from 'src/auth/user.entity';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class MemberService {
@@ -26,6 +29,7 @@ export class MemberService {
   ): Promise<void> {
     const existMember = await this.memberRepository.getMemberByPhoneNumber(
       memberDto.phoneNumber,
+      userId,
     );
 
     if (existMember) {
@@ -78,9 +82,10 @@ export class MemberService {
     return membersResult;
   }
 
-  async getMemberByPhoneNumber(phoneNumber: string) {
+  async getMemberByPhoneNumber(phoneNumber: string, userId: number) {
     const member = await this.memberRepository.getMemberByPhoneNumber(
       phoneNumber,
+      userId,
     );
 
     if (!member) {
@@ -101,8 +106,8 @@ export class MemberService {
     return { ...member, amounts: 0, trainerName: '-' };
   }
 
-  async getMemberById(memberId: number) {
-    const member = await this.memberRepository.getMemberById(memberId);
+  async getMemberById(memberId: number, userId: number) {
+    const member = await this.memberRepository.getMemberById(memberId, userId);
 
     if (!member) {
       throw new NotFoundException('Not found member.');
@@ -131,26 +136,51 @@ export class MemberService {
     };
   }
 
-  async getAllRecordsByMemberId(memberId: number): Promise<Member> {
-    return await this.memberRepository.getAllRecordsByMemberId(memberId);
+  async getAllRecordsByMemberId(
+    memberId: number,
+    userId: number,
+  ): Promise<Member> {
+    return await this.memberRepository.getAllRecordsByMemberId(
+      memberId,
+      userId,
+    );
   }
 
   async getAllRecordsByTrainerId(
     memberId: number,
     trainerId: number,
+    userId: number,
   ): Promise<Member> {
-    return this.memberRepository.getAllRecordsByTrainerId(memberId, trainerId);
+    return this.memberRepository.getAllRecordsByTrainerId(
+      memberId,
+      trainerId,
+      userId,
+    );
   }
 
-  async getARecordById(memberId: number, recordId): Promise<Member> {
-    return this.memberRepository.getRecordById(memberId, recordId);
+  async getARecordById(
+    memberId: number,
+    recordId: number,
+    userId: number,
+  ): Promise<Member> {
+    return this.memberRepository.getRecordById(memberId, recordId, userId);
   }
 
-  async getPTCountingByTrainerId(trainerId: number): Promise<number> {
-    return await this.memberRepository.getPTCountingByTrainerId(trainerId);
+  async getPTCountingByTrainerId(
+    trainerId: number,
+    userId: number,
+  ): Promise<number> {
+    return await this.memberRepository.getPTCountingByTrainerId(
+      trainerId,
+      userId,
+    );
   }
 
-  async registPT(staffId, memberId, memberDTO: MemberDTO.CreatePT) {
+  async registPT(
+    staffId: number,
+    memberId: number,
+    memberDTO: MemberDTO.CreatePT,
+  ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
@@ -227,11 +257,27 @@ export class MemberService {
     memberId: number,
     registDate: string,
     period: number,
+    userId: number,
   ): Promise<void> {
     await this.memberRepository.updateMembersState(
       memberId,
       registDate,
       period,
+      userId,
     );
+  }
+
+  async deleteMember(id, user: User) {
+    const member = await this.memberRepository.getMemberById(id, user.id);
+
+    if (!member) {
+      throw new NotFoundException('Not found member');
+    }
+
+    if (user.id !== member.userId) {
+      throw new UnauthorizedException('Not matched userId');
+    }
+
+    await this.memberRepository.deleteMember(id);
   }
 }

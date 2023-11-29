@@ -97,4 +97,10 @@ export namespace MemberDTO {
     @Matches(/^\d{3}-\d{4}-\d{4}$/)
     readonly phoneNumber: string;
   }
+
+  export class Delete {
+    @IsString()
+    @Matches(/^[A-Za-z\d!@#$%^&*()]{8,30}/)
+    readonly password: string;
+  }
 }

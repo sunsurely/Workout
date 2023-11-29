@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -57,8 +58,11 @@ export class MemberController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/phone')
-  async getMemberByPhoneNumber(@Query('phoneNumber') phoneNumber: string) {
-    return this.memberService.getMemberByPhoneNumber(phoneNumber);
+  async getMemberByPhoneNumber(
+    @Query('phoneNumber') phoneNumber: string,
+    @Req() req: any,
+  ) {
+    return this.memberService.getMemberByPhoneNumber(phoneNumber, req.user.id);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -73,16 +77,23 @@ export class MemberController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:memberId/detail')
-  async getMemberById(@Param('memberId', new ParseIntPipe()) memberId: number) {
-    return this.memberService.getMemberById(memberId);
+  async getMemberById(
+    @Param('memberId', new ParseIntPipe()) memberId: number,
+    @Req() req: any,
+  ) {
+    return this.memberService.getMemberById(memberId, req.user.id);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:memberId/records')
   async getAllRecordsById(
     @Param('memberId', new ParseIntPipe()) memberId: number,
+    @Req() req: any,
   ): Promise<Member> {
-    return await this.memberService.getAllRecordsByMemberId(memberId);
+    return await this.memberService.getAllRecordsByMemberId(
+      memberId,
+      req.user.id,
+    );
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -90,10 +101,12 @@ export class MemberController {
   async getAllRecordsByTrainerId(
     @Param('memberId', new ParseIntPipe()) memberId: number,
     @Param('trainerId', new ParseIntPipe()) trainerId: number,
+    @Req() req: any,
   ): Promise<Member> {
     return await this.memberService.getAllRecordsByTrainerId(
       memberId,
       trainerId,
+      req.user.id,
     );
   }
 
@@ -102,16 +115,22 @@ export class MemberController {
   async getRecordById(
     @Param('memberId', new ParseIntPipe()) memberId: number,
     @Param('recordId', new ParseIntPipe()) recordId: number,
+    @Req() req: any,
   ): Promise<Member> {
-    return await this.memberService.getARecordById(memberId, recordId);
+    return await this.memberService.getARecordById(
+      memberId,
+      recordId,
+      req.user.id,
+    );
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/trainer/:trainerId/pt')
   async getPTCountingByTrainerId(
     @Param('trainerId', new ParseIntPipe()) trainerId: number,
+    @Req() req: any,
   ): Promise<number> {
-    return this.memberService.getPTCountingByTrainerId(trainerId);
+    return this.memberService.getPTCountingByTrainerId(trainerId, req.user.id);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -119,11 +138,22 @@ export class MemberController {
   async updateMembersState(
     @Param('memberId', new ParseIntPipe()) memberId: number,
     @Body() memberDTO: MemberDTO.UpdateState,
+    @Req() req: any,
   ): Promise<void> {
     await this.memberService.updateMembersState(
       memberId,
       memberDTO.registDate,
       memberDTO.period,
+      req.user.id,
     );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/:memberId')
+  async deleteMember(
+    @Param('memberId', new ParseIntPipe()) memberId: number,
+    @Req() req: any,
+  ) {
+    return this.memberService.deleteMember(memberId, req.user);
   }
 }
