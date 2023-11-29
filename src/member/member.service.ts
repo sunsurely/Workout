@@ -101,14 +101,25 @@ export class MemberService {
     return { ...member, amounts: 0, trainerName: '-' };
   }
 
-  async getMemberById(memberId: number): Promise<Member> {
+  async getMemberById(memberId: number) {
     const member = await this.memberRepository.getMemberById(memberId);
 
     if (!member) {
       throw new NotFoundException('Not found member.');
     }
 
-    return member;
+    if (member.pts.length >= 1) {
+      const { pts, ...rest } = member;
+
+      const result = {
+        ...rest,
+        amounts: pts[0].amounts,
+        trainerName: pts[0].staff.name,
+      };
+      return result;
+    }
+
+    return { ...member, amounts: 0, trainerName: '-' };
   }
 
   async getAllRecordsByMemberId(memberId: number): Promise<Member> {

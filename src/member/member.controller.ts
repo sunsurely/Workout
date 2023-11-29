@@ -58,7 +58,6 @@ export class MemberController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/phone')
   async getMemberByPhoneNumber(@Query('phoneNumber') phoneNumber: string) {
-    console.log(phoneNumber);
     return this.memberService.getMemberByPhoneNumber(phoneNumber);
   }
 
@@ -74,9 +73,7 @@ export class MemberController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('/:memberId/detail')
-  async getMemberById(
-    @Param('memberId', new ParseIntPipe()) memberId: number,
-  ): Promise<Member> {
+  async getMemberById(@Param('memberId', new ParseIntPipe()) memberId: number) {
     return this.memberService.getMemberById(memberId);
   }
 
