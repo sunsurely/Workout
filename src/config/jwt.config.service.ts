@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtOptionsFactory } from '@nestjs/jwt';
-import { JwtModuleOptions } from '@nestjs/jwt/dist';
-import { UsersRepository } from 'src/auth/user.repository';
 
 @Injectable()
-export class JwtConfigService implements JwtOptionsFactory {
+export class JwtConfigService {
   constructor(private readonly configService: ConfigService) {}
 
-  createJwtOptions(): JwtModuleOptions {
+  createJwtOptions() {
     return {
       secret: this.configService.get<string>('TOKEN_SECRET'),
-      signOptions: {
-        expiresIn: this.configService.get<string>('TOKEN_EXPIRATION_TIME'),
-      },
+      expiresIn: this.configService.get<string>('TOKEN_EXPIRATION_TIME'),
+    };
+  }
+
+  createRefreshTokenOptions() {
+    return {
+      secret: this.configService.get<string>('REFRESH_SECRET'),
+      expiresIn: this.configService.get<string>('REFRESH_EXPIRATION_TIME'),
     };
   }
 }

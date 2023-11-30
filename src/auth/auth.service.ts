@@ -8,12 +8,14 @@ import { AuthDto } from './dto/auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './user.entity';
 import * as bcrypt from 'bcryptjs';
+import { JwtConfigService } from 'src/config/jwt.config.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userRepository: UsersRepository,
     private jwtService: JwtService,
+    private jwtConfigService: JwtConfigService,
   ) {}
 
   async signup({
@@ -36,8 +38,8 @@ export class AuthService {
   async signin(
     user: User,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const accessToken = this.getToken(user.nickname);
-    const refreshToken = this.getToken(user.nickname);
+    const accessToken = this.getAccessToken(user.nickname);
+    const refreshToken = this.getRefreshToken(user.nickname);
     await this.userRepository.update(
       { nickname: user.nickname },
       { refreshToken },
@@ -50,9 +52,20 @@ export class AuthService {
     await this.userRepository.removeRefreshToken(nickname);
   }
 
-  getToken(nickname: string) {
+  getAccessToken(nickname: string) {
     const payload = { nickname };
-    return this.jwtService.sign(payload);
+    return this.jwtService.sign(
+      payload,
+      this.jwtConfigService.createJwtOptions(),
+    );
+  }
+
+  getRefreshToken(nickname: string) {
+    const payload = { nickname };
+    return this.jwtService.sign(
+      payload,
+      this.jwtConfigService.createRefreshTokenOptions(),
+    );
   }
 
   async validateUser(email: string, password: string): Promise<User | null> {
@@ -75,7 +88,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token');
     }
 
-    const accessToken = await this.getToken(user.nickname);
+    const accessToken = await this.getAccessToken(user.nickname);
     return { accessToken };
   }
 }
