@@ -1,6 +1,7 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { StaffRepository } from './staff.repository';
 import { StaffDTO } from './dto/staff.dto';
+import { Staff } from './entities/staff.entity';
 
 @Injectable()
 export class StaffService {
@@ -16,5 +17,9 @@ export class StaffService {
     }
 
     await this.staffRepository.createStaff(staffDTO, userId);
+  }
+
+  async getAllStaff(userId: number, gender: string): Promise<Staff[]> {
+    return this.staffRepository.getAllStaff(userId, gender);
   }
 }
