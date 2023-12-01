@@ -70,7 +70,7 @@ export class MemberController {
     @Param('memberId', new ParseIntPipe()) memberId: number,
     @Req() req: any,
   ) {
-    return this.memberService.getMemberById(memberId, req.user.id);
+    return this.memberService.getMemberById(memberId);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -94,7 +94,13 @@ export class MemberController {
     @Param('memberId', new ParseIntPipe()) memberId: number,
     @Param('ptId', new ParseIntPipe()) ptId: number,
     @Param('counting', new ParseIntPipe()) counting: number,
+    @Body() memberDTO: MemberDTO.UpdateCounting,
   ) {
-    await this.memberService.updatePTCounting(memberId, ptId, counting);
+    await this.memberService.updatePTCounting(
+      memberId,
+      ptId,
+      counting,
+      memberDTO.expirationDate,
+    );
   }
 }

@@ -105,8 +105,8 @@ export class MemberService {
     return { ...member, amounts: 0, trainerName: '-' };
   }
 
-  async getMemberById(memberId: number, userId: number) {
-    const member = await this.memberRepository.getMemberById(memberId, userId);
+  async getMemberById(memberId: number) {
+    const member = await this.memberRepository.getMemberById(memberId);
 
     if (!member) {
       throw new NotFoundException('Not found member.');
@@ -178,11 +178,19 @@ export class MemberService {
       memberId,
       registDate,
       period,
-      userId,
     );
   }
 
-  async updatePTCounting(memberId: number, ptId: number, counting) {
+  async updatePTCounting(
+    memberId: number,
+    ptId: number,
+    counting,
+    expirationdate,
+  ) {
+    const newDate = new Date();
+    const today = newDate.toISOString().split('T')[0];
+
+    const member = await this.getMemberById(memberId);
     const pt = await this.ptRepository.findOne({
       where: { id: ptId, memberId },
     });
@@ -195,6 +203,11 @@ export class MemberService {
       );
 
       pt.expired = true;
+    }
+
+    if (today === expirationdate) {
+      member.state = MemberState.EXPIRED;
+      await this.memberRepository.save(member);
     }
 
     await this.ptRepository.save(pt);

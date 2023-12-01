@@ -76,6 +76,12 @@ export namespace MemberDTO {
     readonly period: number;
   }
 
+  export class UpdateCounting {
+    @IsString()
+    @Matches(/^\d{4}-\d{2}-\d{2}$/)
+    readonly expirationDate: string;
+  }
+
   export class Option {
     @IsString()
     @IsEnum(['pt', 'expired', 'normal', 'total'])

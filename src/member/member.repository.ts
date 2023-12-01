@@ -127,10 +127,9 @@ export class MemberReppository extends Repository<Member> {
     return member;
   }
 
-  async getMemberById(id: number, userId: number): Promise<Member> {
+  async getMemberById(id: number): Promise<Member> {
     const member = await this.createQueryBuilder('member')
       .where('member.id=:id', { id })
-      .andWhere('member.userId=:userId', { userId })
       .leftJoinAndSelect('member.pts', 'pt', 'pt.expired=:expired', {
         expired: false,
       })
@@ -165,9 +164,8 @@ export class MemberReppository extends Repository<Member> {
     memberId: number,
     registDate: string,
     period: number,
-    userId: number,
   ): Promise<void> {
-    const member = await this.getMemberById(memberId, userId);
+    const member = await this.getMemberById(memberId);
 
     if (member.state === MemberState.NORMAL) {
       throw new BadRequestException(
@@ -176,9 +174,11 @@ export class MemberReppository extends Repository<Member> {
     }
 
     if (member.state === MemberState.PT) {
-      await this.update({ id: memberId, userId }, { registDate, period });
+      await this.update({ id: memberId }, { registDate, period });
+
       return;
     }
+
     await this.update(
       { id: memberId },
       { registDate, state: MemberState.NORMAL, period },
