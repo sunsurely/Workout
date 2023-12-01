@@ -2,25 +2,22 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { MemberReppository } from './member.repository';
 import { MemberDTO } from './dto/member.dto';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Member, MemberState } from './entities/member.entity';
 import { PT } from './entities/pt.entity';
-import { Record } from './entities/record.entity';
-import { Excercise as recordExercise } from './dto/member.dto';
-import { Excercise } from './entities/excercise.entity';
 import { AllMember } from './types/member.types';
-import { User } from 'src/auth/user.entity';
-import * as bcrypt from 'bcryptjs';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class MemberService {
   constructor(
     private readonly memberRepository: MemberReppository,
     private dataSource: DataSource,
+    @InjectRepository(PT)
+    private readonly ptRepository: Repository<PT>,
   ) {}
 
   async registMember(
@@ -125,6 +122,7 @@ export class MemberService {
         counting: pts[0].counting,
         ptExpired: pts[0].expired,
         ptRegistDate: pts[0].registDate,
+        ptId: pts[0].id,
       };
       return result;
     }
@@ -135,47 +133,8 @@ export class MemberService {
       trainerName: '-',
       counting: '-',
       ptExpired: '-',
+      ptRegistDate: '-',
     };
-  }
-
-  async getAllRecordsByMemberId(
-    memberId: number,
-    userId: number,
-  ): Promise<Member> {
-    return await this.memberRepository.getAllRecordsByMemberId(
-      memberId,
-      userId,
-    );
-  }
-
-  async getAllRecordsByTrainerId(
-    memberId: number,
-    trainerId: number,
-    userId: number,
-  ): Promise<Member> {
-    return this.memberRepository.getAllRecordsByTrainerId(
-      memberId,
-      trainerId,
-      userId,
-    );
-  }
-
-  async getARecordById(
-    memberId: number,
-    recordId: number,
-    userId: number,
-  ): Promise<Member> {
-    return this.memberRepository.getRecordById(memberId, recordId, userId);
-  }
-
-  async getPTCountingByTrainerId(
-    trainerId: number,
-    userId: number,
-  ): Promise<number> {
-    return await this.memberRepository.getPTCountingByTrainerId(
-      trainerId,
-      userId,
-    );
   }
 
   async registPT(
@@ -209,52 +168,6 @@ export class MemberService {
     }
   }
 
-  async createRecord(
-    memberId: number,
-    trainerId: number,
-    ptId: number,
-    memberDTO: MemberDTO.CreateRecord,
-  ): Promise<void> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-
-    try {
-      await queryRunner.startTransaction();
-      const newRecord = queryRunner.manager.create(Record, {
-        memberId,
-        trainerId,
-        ptId,
-        traningDate: memberDTO.trainingDate,
-      });
-      await queryRunner.manager.save(newRecord);
-      const exerArr: recordExercise[] = memberDTO.exerciseArr;
-
-      for (const arr of exerArr) {
-        const exercise = queryRunner.manager.create(Excercise, {
-          ...arr,
-          recordId: newRecord.id,
-        });
-        await queryRunner.manager.save(exercise);
-      }
-
-      const pt = await queryRunner.manager.findOne(PT, { where: { id: ptId } });
-      const counting = pt.counting - 1;
-      await queryRunner.manager.update(PT, { id: ptId }, { counting });
-
-      if (counting <= 0) {
-        await queryRunner.manager.update(PT, { id: ptId }, { expired: true });
-        //소켓 메시지처리 Or pt만료 메세지 생성
-      }
-
-      await queryRunner.commitTransaction();
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
   async updateMembersState(
     memberId: number,
     registDate: string,
@@ -267,5 +180,23 @@ export class MemberService {
       period,
       userId,
     );
+  }
+
+  async updatePTCounting(memberId: number, ptId: number, counting) {
+    const pt = await this.ptRepository.findOne({
+      where: { id: ptId, memberId },
+    });
+    pt.counting = counting;
+
+    if (counting === 0) {
+      await this.memberRepository.updateMemberRegistState(
+        memberId,
+        MemberState.NORMAL,
+      );
+
+      pt.expired = true;
+    }
+
+    await this.ptRepository.save(pt);
   }
 }

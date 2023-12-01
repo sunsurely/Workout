@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -17,8 +18,7 @@ export namespace StaffDTO {
     @MaxLength(10)
     readonly name: string;
 
-    @IsNotEmpty()
-    @IsString()
+    @Matches(/^\d{3}-\d{4}-\d{4}$/)
     readonly phoneNumber: string;
 
     @IsNotEmpty()

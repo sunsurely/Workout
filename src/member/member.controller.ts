@@ -40,17 +40,6 @@ export class MemberController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Post('/pt/record/:memberId/:trainerId/:ptId')
-  async createRecord(
-    @Param('memberId', new ParseIntPipe()) memberId: number,
-    @Param('trainerId', new ParseIntPipe()) trainerId: number,
-    @Param('ptId', new ParseIntPipe()) ptId: number,
-    @Body() memberDTO: MemberDTO.CreateRecord,
-  ): Promise<void> {
-    await this.memberService.createRecord(memberId, trainerId, ptId, memberDTO);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
   @Get('/name')
   async getMembersByName(@Req() req: any, @Query('name') name: string) {
     return this.memberService.getMembersByName(req.user.id, name);
@@ -85,55 +74,6 @@ export class MemberController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('/:memberId/records')
-  async getAllRecordsById(
-    @Param('memberId', new ParseIntPipe()) memberId: number,
-    @Req() req: any,
-  ): Promise<Member> {
-    return await this.memberService.getAllRecordsByMemberId(
-      memberId,
-      req.user.id,
-    );
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('/:memberId/records/trainer/:trainerId')
-  async getAllRecordsByTrainerId(
-    @Param('memberId', new ParseIntPipe()) memberId: number,
-    @Param('trainerId', new ParseIntPipe()) trainerId: number,
-    @Req() req: any,
-  ): Promise<Member> {
-    return await this.memberService.getAllRecordsByTrainerId(
-      memberId,
-      trainerId,
-      req.user.id,
-    );
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('/:memberId/records/:recordId/detail')
-  async getRecordById(
-    @Param('memberId', new ParseIntPipe()) memberId: number,
-    @Param('recordId', new ParseIntPipe()) recordId: number,
-    @Req() req: any,
-  ): Promise<Member> {
-    return await this.memberService.getARecordById(
-      memberId,
-      recordId,
-      req.user.id,
-    );
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('/trainer/:trainerId/pt')
-  async getPTCountingByTrainerId(
-    @Param('trainerId', new ParseIntPipe()) trainerId: number,
-    @Req() req: any,
-  ): Promise<number> {
-    return this.memberService.getPTCountingByTrainerId(trainerId, req.user.id);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
   @Patch('/:memberId/state')
   async updateMembersState(
     @Param('memberId', new ParseIntPipe()) memberId: number,
@@ -146,5 +86,15 @@ export class MemberController {
       memberDTO.period,
       req.user.id,
     );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('/:memberId/pt/:ptId/:counting')
+  async updatePTCounting(
+    @Param('memberId', new ParseIntPipe()) memberId: number,
+    @Param('ptId', new ParseIntPipe()) ptId: number,
+    @Param('counting', new ParseIntPipe()) counting: number,
+  ) {
+    await this.memberService.updatePTCounting(memberId, ptId, counting);
   }
 }

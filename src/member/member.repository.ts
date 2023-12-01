@@ -131,7 +131,9 @@ export class MemberReppository extends Repository<Member> {
     const member = await this.createQueryBuilder('member')
       .where('member.id=:id', { id })
       .andWhere('member.userId=:userId', { userId })
-      .leftJoinAndSelect('member.pts', 'pt')
+      .leftJoinAndSelect('member.pts', 'pt', 'pt.expired=:expired', {
+        expired: false,
+      })
       .leftJoinAndSelect('pt.staff', 'staff')
       .select([
         'member.id',
@@ -159,107 +161,6 @@ export class MemberReppository extends Repository<Member> {
     return member;
   }
 
-  async getAllRecordsByMemberId(
-    memberId: number,
-    userId: number,
-  ): Promise<Member> {
-    const result = await this.createQueryBuilder('member')
-      .andWhere('member.userId=:userId', { userId })
-      .where('member.id=:memberId', { memberId })
-      .leftJoinAndSelect('member.records', 'record')
-      .leftJoinAndSelect('record.staff', 'staff')
-      .leftJoinAndSelect('record.excercisies', 'excercise')
-      .select([
-        'member.name',
-        'member.gender',
-        'member.birth',
-        'staff.name',
-        'record.id',
-        'record.createdAt',
-        'record.traningDate',
-        'excercise.id',
-        'excercise.part',
-        'excercise.excercise',
-        'excercise.set',
-      ])
-      .getOne();
-
-    return result;
-  }
-
-  async getAllRecordsByTrainerId(
-    memberId: number,
-    trainerId: number,
-    userId: number,
-  ): Promise<Member> {
-    const result = await this.createQueryBuilder('member')
-      .where('member.id="memberId', { memberId })
-      .andWhere('member.userId=:userId', { userId })
-      .leftJoinAndSelect('member.records', 'record')
-      .where('record.trainerId=:trainerId', { trainerId })
-      .leftJoinAndSelect('record.excercisies', 'excercise')
-      .leftJoinAndSelect('record.staff', 'staff')
-      .select([
-        'member.id',
-        'member.name',
-        'member.gender',
-        'member.birth',
-        'staff.name',
-        'record.id',
-        'record.createdAt',
-        'record.traningDate',
-        'excercise.id',
-        'excercise.part',
-        'excercise.excercise',
-        'excercise.set',
-      ])
-      .getOne();
-
-    return result;
-  }
-
-  async getRecordById(
-    memberId: number,
-    recordId: number,
-    userId: number,
-  ): Promise<Member> {
-    const record = await this.createQueryBuilder('member')
-      .where('member.id=:memberId', { memberId })
-      .andWhere('member.userId=:userId', { userId })
-      .leftJoinAndSelect('member.records', 'record')
-      .where('record.id=:recordId', { recordId })
-      .leftJoinAndSelect('record.excercisies', 'excercise')
-      .select([
-        'member.id',
-        'member.name',
-        'member.gender',
-        'member.birth',
-        'record.id',
-        'record.createdAt',
-        'record.traningDate',
-        'excercise.id',
-        'excercise.part',
-        'excercise.excercise',
-        'excercise.set',
-      ])
-      .getOne();
-
-    return record;
-  }
-
-  async getPTCountingByTrainerId(
-    trainerId: number,
-    userId: number,
-  ): Promise<number> {
-    const membersCount = await this.createQueryBuilder('member')
-      .innerJoin('member.pts', 'pt')
-      .where('member.userId=:userId', { userId })
-      .andWhere('pt.trainerId=:trainerId', { trainerId })
-      .andWhere('pt.expired=:expired', { expired: false })
-      .getCount();
-    return membersCount;
-  }
-
   async updateMembersState(
     memberId: number,
     registDate: string,
@@ -282,5 +183,9 @@ export class MemberReppository extends Repository<Member> {
       { id: memberId },
       { registDate, state: MemberState.NORMAL, period },
     );
+  }
+
+  async updateMemberRegistState(memberId: number, state: MemberState) {
+    await this.update({ id: memberId }, { state });
   }
 }

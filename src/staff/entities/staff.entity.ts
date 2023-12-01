@@ -1,7 +1,7 @@
 import { User } from 'src/auth/user.entity';
 import { Gender } from 'src/common/types';
 import { PT } from 'src/member/entities/pt.entity';
-import { Record } from 'src/member/entities/record.entity';
+
 import {
   BaseEntity,
   Column,
@@ -53,9 +53,6 @@ export class Staff extends BaseEntity {
 
   @OneToMany(() => PT, (pt) => pt.staff)
   pts: PT[];
-
-  @OneToMany(() => Record, (record) => record.staff)
-  records: Record[];
 
   @ManyToOne(() => User, (user) => user.staffs)
   @JoinColumn({ name: 'userId' })

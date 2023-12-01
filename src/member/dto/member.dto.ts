@@ -10,6 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Gender } from 'src/common/types';
+import { MemberState } from '../entities/member.entity';
 
 export interface Excercise {
   part: string;

@@ -10,7 +10,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Record } from './record.entity';
+
 import { Member } from './member.entity';
 import { Staff } from 'src/staff/entities/staff.entity';
 
@@ -45,9 +45,6 @@ export class PT extends BaseEntity {
 
   @DeleteDateColumn({ name: 'deleted_at', type: 'timestamp', nullable: true })
   deletedAt: Date | null;
-
-  @OneToMany(() => Record, (record) => record.pt)
-  records: Record[];
 
   @ManyToOne(() => Member, (member) => member.pts)
   @JoinColumn({ name: 'memberId' })
