@@ -49,12 +49,14 @@ export class MemberService {
       state,
       gender,
     );
+
     const memberResult = members.map((member) => {
       const { pts, ...rest } = member;
       return {
         ...rest,
-        amounts: pts.length >= 1 ? pts[0].amounts : 0,
-        trainerName: pts.length >= 1 ? pts[0].staff.name : '-',
+
+        amounts: pts.length >= 1 && pts[0].staff ? pts[0].amounts : 0,
+        trainerName: pts.length >= 1 && pts[0].staff ? pts[0].staff.name : '-',
       };
     });
 
@@ -113,7 +115,7 @@ export class MemberService {
       throw new NotFoundException('Not found member.');
     }
 
-    if (member.pts.length >= 1) {
+    if (member.pts.length >= 1 && member.pts[0].staff) {
       const { pts, ...rest } = member;
 
       const result = {
@@ -265,19 +267,5 @@ export class MemberService {
       period,
       userId,
     );
-  }
-
-  async deleteMember(id, user: User) {
-    const member = await this.memberRepository.getMemberById(id, user.id);
-
-    if (!member) {
-      throw new NotFoundException('Not found member');
-    }
-
-    if (user.id !== member.userId) {
-      throw new UnauthorizedException('Not matched userId');
-    }
-
-    await this.memberRepository.deleteMember(id);
   }
 }

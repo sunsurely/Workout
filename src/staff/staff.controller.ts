@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
+  ParseIntPipe,
   Post,
   Query,
   Req,
@@ -32,7 +35,15 @@ export class StaffController {
     @Query('gender') gender: string,
     @Req() req: any,
   ): Promise<Staff[]> {
-    console.log(gender);
     return await this.staffService.getAllStaff(req.user.id, gender);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('/:staffId')
+  async deleteStaff(
+    @Param('staffId', new ParseIntPipe()) staffId: number,
+    @Req() req: any,
+  ) {
+    return this.staffService.deleteStaff(req.user.id, staffId);
   }
 }

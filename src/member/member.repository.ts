@@ -43,17 +43,11 @@ export class MemberReppository extends Repository<Member> {
       { userId },
     );
 
-    if (stateOpt !== 'total' && genderOpt !== 'total') {
-      await query
-        .andWhere('member.gender=:gender', { gender: genderOpt })
-        .andWhere('member.state=:state', { state: stateOpt });
-    } else {
-      if (stateOpt !== 'total') {
-        await query.andWhere('member.state=:state', { state: stateOpt });
-      }
-      if (genderOpt !== 'total') {
-        await query.andWhere('member.gender=:gender', { gender: genderOpt });
-      }
+    if (stateOpt !== 'total') {
+      await query.andWhere('member.state=:state', { state: stateOpt });
+    }
+    if (genderOpt !== 'total') {
+      await query.andWhere('member.gender=:gender', { gender: genderOpt });
     }
 
     const members = await query
@@ -73,6 +67,7 @@ export class MemberReppository extends Repository<Member> {
         'member.period',
         'member.createdAt',
         'pt.amounts',
+        'pt.expired',
         'staff.name',
       ])
       .getMany();
@@ -287,9 +282,5 @@ export class MemberReppository extends Repository<Member> {
       { id: memberId },
       { registDate, state: MemberState.NORMAL, period },
     );
-  }
-
-  async deleteMember(id: number) {
-    await this.softDelete({ id });
   }
 }

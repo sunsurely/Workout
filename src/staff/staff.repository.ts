@@ -38,4 +38,8 @@ export class StaffRepository extends Repository<Staff> {
   async findStaffByPhoneNumber(phoneNumber): Promise<Staff> {
     return this.findOne({ where: { phoneNumber } });
   }
+
+  async deleteStaff(userId: number, id: number) {
+    return this.softDelete({ userId, id });
+  }
 }

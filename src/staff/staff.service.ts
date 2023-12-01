@@ -22,4 +22,8 @@ export class StaffService {
   async getAllStaff(userId: number, gender: string): Promise<Staff[]> {
     return this.staffRepository.getAllStaff(userId, gender);
   }
+
+  async deleteStaff(userId: number, id: number) {
+    return this.staffRepository.deleteStaff(userId, id);
+  }
 }

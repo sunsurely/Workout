@@ -147,13 +147,4 @@ export class MemberController {
       req.user.id,
     );
   }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Delete('/:memberId')
-  async deleteMember(
-    @Param('memberId', new ParseIntPipe()) memberId: number,
-    @Req() req: any,
-  ) {
-    return this.memberService.deleteMember(memberId, req.user);
-  }
 }
