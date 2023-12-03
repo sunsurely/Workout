@@ -102,14 +102,14 @@ export class MemberReppository extends Repository<Member> {
     return members;
   }
 
-  async getMemberByPhoneNumber(phoneNumber: string, userId: number) {
+  async getMemberByPhoneNumber(phoneNumber: string) {
     const member = await this.createQueryBuilder('member')
       .where('member.phoneNumber=:phoneNumber', { phoneNumber })
-      .andWhere('member.userId=:userId', { userId })
-      .leftJoin('member.pts', 'pt')
+      .leftJoinAndSelect('member.pts', 'pt', 'pt.expired=:expired', {
+        expired: false,
+      })
       .leftJoinAndSelect('pt.staff', 'staff')
       .select([
-        'member.id',
         'member.userId',
         'member.name',
         'member.gender',
@@ -122,6 +122,7 @@ export class MemberReppository extends Repository<Member> {
         'member.phoneNumber',
         'pt.amounts',
         'staff.name',
+        'pt.expired',
       ])
       .getOne();
     return member;

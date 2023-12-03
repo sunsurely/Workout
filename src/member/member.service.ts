@@ -26,7 +26,6 @@ export class MemberService {
   ): Promise<void> {
     const existMember = await this.memberRepository.getMemberByPhoneNumber(
       memberDto.phoneNumber,
-      userId,
     );
 
     if (existMember) {
@@ -84,7 +83,6 @@ export class MemberService {
   async getMemberByPhoneNumber(phoneNumber: string, userId: number) {
     const member = await this.memberRepository.getMemberByPhoneNumber(
       phoneNumber,
-      userId,
     );
 
     if (!member) {
